@@ -141,8 +141,9 @@ def cyberpunk_box(img, x1, y1, x2, y2, color, thickness=3, corner_len=25, glow=T
         cv2.line(img, (x2, y1), (x2, y1 + corner_len), c, i)
         cv2.line(img, (x1, y2), (x1 + corner_len, y2), c, i)
         cv2.line(img, (x1, y2), (x1, y2 - corner_len), c, i)
-        cv2.line(img, (x2, y2), (x2 - corner_len, y2), c, i)
-        cv2.line(img, (x2, y2), (x2, y2 - corner_len), c, i)
+        # Bottom-right corner
+        cv2.line(img, (x2, y2), (x2 - corner_len, y2), c, i)  # horizontal
+        cv2.line(img, (x2, y2), (x2, y2 - corner_len), c, i)  # vertical
     if glow:
         overlay = img.copy()
         cv2.rectangle(overlay, (x1, y1), (x2, y2), color, thickness=thickness * 4)
