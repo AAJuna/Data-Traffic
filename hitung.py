@@ -107,7 +107,8 @@ parser = argparse.ArgumentParser(description="Vehicle counting with YOLOv8 track
 parser.add_argument("--video", type=str, default="Video.mp4", help="path to input video")
 parser.add_argument("--weights", type=str, default="yolov8n.pt", help="YOLO model path")
 parser.add_argument("--output", type=str, default="hasil_cyberpunk_trail.mp4", help="output video path")
-parser.add_argument("--tracker", type=str, default="bytetrack.yaml", help="tracker config (e.g., bytetrack.yaml or botsort.yaml)")
+parser.add_argument("--tracker", type=str, default="bytetrack.yaml",
+                    help="tracker config (e.g., bytetrack.yaml or botsort.yaml)")
 parser.add_argument("--imgsz", type=int, default=960, help="inference image size")
 parser.add_argument("--conf", type=float, default=0.25, help="confidence threshold")
 parser.add_argument("--device", type=str, default="cuda" if TORCH_GPU else "cpu", help="compute device")
