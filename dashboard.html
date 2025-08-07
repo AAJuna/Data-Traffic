@@ -1,40 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Traffic Data Dashboard</title>
-  <link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <title>Traffic Data Dashboard</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Traffic Data Dashboard</h1>
-  <table id="data-table">
-    <thead></thead>
-    <tbody></tbody>
-  </table>
-  <script>
-    fetch('traffic_data.json')
-      .then(response => response.json())
-      .then(data => {
-        const thead = document.querySelector('#data-table thead');
-        const tbody = document.querySelector('#data-table tbody');
-        if (data.length === 0) {
-          thead.innerHTML = '<tr><th>No data available</th></tr>';
-          return;
-        }
-        const headers = Object.keys(data[0].counts);
-        let headerRow = '<tr><th>Timestamp</th>';
-        headers.forEach(h => headerRow += `<th>${h}</th>`);
-        headerRow += '<th>Total</th></tr>';
-        thead.innerHTML = headerRow;
-        data.forEach(row => {
-          let tr = `<tr><td>${row.timestamp}</td>`;
-          headers.forEach(h => {
-            tr += `<td>${row.counts[h] || 0}</td>`;
-          });
-          tr += `<td>${row.total}</td></tr>`;
-          tbody.innerHTML += tr;
-        });
-      });
-  </script>
+    <h1>Traffic Data Dashboard</h1>
+    <table id="data-table">
+        <thead></thead>
+        <tbody></tbody>
+    </table>
+    <script>
+        fetch('traffic_data.json')
+            .then(response => response.json())
+            .then(data => {
+                const thead = document.querySelector('#data-table thead');
+                const tbody = document.querySelector('#data-table tbody');
+                if (data.length === 0) {
+                    thead.innerHTML = '<tr><th>No data available</th></tr>';
+                    return;
+                }
+                const headers = Object.keys(data[0].counts);
+                let headerRow = '<tr><th>Timestamp</th>';
+                headers.forEach(h => headerRow += `<th>${h}</th>`);
+                headerRow += '<th>Total</th></tr>';
+                thead.innerHTML = headerRow;
+                data.forEach(row => {
+                    let tr = `<tr><td>${row.timestamp}</td>`;
+                    headers.forEach(h => {
+                        tr += `<td>${row.counts[h] || 0}</td>`;
+                    });
+                    tr += `<td>${row.total}</td></tr>`;
+                    tbody.innerHTML += tr;
+                });
+            });
+    </script>
 </body>
 </html>
