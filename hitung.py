@@ -5,11 +5,6 @@ import getpass
 import platform
 from datetime import datetime
 import socket
-import argparse
-import cv2
-from ultralytics import YOLO
-from collections import defaultdict, deque
-import numpy as np
 
 
 def show_ascii_header():
@@ -70,14 +65,6 @@ def play_loading_animation(duration=3.5):
     sys.stdout.flush()
 
 
-try:
-    import torch
-    torch.backends.cudnn.benchmark = True
-    TORCH_GPU = torch.cuda.is_available()
-    GPU_NAME = torch.cuda.get_device_name(0) if TORCH_GPU else "N/A"
-except Exception:
-    TORCH_GPU = False
-    GPU_NAME = "N/A"
 
 
 def get_system_info():
@@ -94,14 +81,24 @@ def get_system_info():
     return user, sysinfo, tanggal, ip, loc
 
 
-def print_env_info():
+def print_env_info(torch_gpu=None, gpu_name=None):
+    if torch_gpu is None or gpu_name is None:
+        try:
+            import torch
+            torch.backends.cudnn.benchmark = True
+            torch_gpu = torch.cuda.is_available()
+            gpu_name = torch.cuda.get_device_name(0) if torch_gpu else "N/A"
+        except Exception:
+            torch_gpu = False
+            gpu_name = "N/A"
+
     user, sysinfo, tanggal, ip, loc = get_system_info()
     print('\033[92m')
     print(f" [*] User         : {user}")
     print(f" [*] System       : {sysinfo}")
     print(f" [*] Date & Time  : {tanggal}")
-    print(f" [*] GPU Support  : {'Yes' if TORCH_GPU else 'No'}")
-    print(f" [*] GPU Device   : {GPU_NAME}")
+    print(f" [*] GPU Support  : {'Yes' if torch_gpu else 'No'}")
+    print(f" [*] GPU Device   : {gpu_name}")
     print('\033[0m')
     print('\033[95m' + "-"*55 + '\033[0m')
     print('\033[96m' + "    Console Live Counting Impression    " + '\033[0m')
@@ -119,6 +116,9 @@ CYBER_COLORS = [
 
 
 def cyberpunk_box(img, x1, y1, x2, y2, color, thickness=3, corner_len=25, glow=True):
+    import cv2
+    import numpy as np
+
     for i in range(thickness, 0, -1):
         c = tuple(int(x) for x in np.array(color) * (0.4 + 0.6 * i / thickness))
         cv2.line(img, (x1, y1), (x1 + corner_len, y1), c, i)
@@ -136,24 +136,41 @@ def cyberpunk_box(img, x1, y1, x2, y2, color, thickness=3, corner_len=25, glow=T
 
 
 def cyberpunk_text(img, text, org, color, scale=0.7, thickness=2):
+    import cv2
+
     cv2.putText(img, text, org, cv2.FONT_HERSHEY_PLAIN, scale, (10, 10, 10), thickness + 2, cv2.LINE_AA)
     cv2.putText(img, text, org, cv2.FONT_HERSHEY_PLAIN, scale, color, thickness, cv2.LINE_AA)
 
 
 def main():
+    import argparse
+    import cv2
+    from ultralytics import YOLO
+    from collections import defaultdict, deque
+    import numpy as np
+
+    try:
+        import torch
+        torch.backends.cudnn.benchmark = True
+        torch_gpu = torch.cuda.is_available()
+        gpu_name = torch.cuda.get_device_name(0) if torch_gpu else "N/A"
+    except Exception:
+        torch_gpu = False
+        gpu_name = "N/A"
+
     show_ascii_header()
     play_loading_animation()
-    print_env_info()
+    print_env_info(torch_gpu, gpu_name)
     time.sleep(1)
 
     parser = argparse.ArgumentParser(description="Vehicle counting with YOLOv8 tracking")
     parser.add_argument("--video", type=str, default="Sampel-Jateng.mp4", help="path to input video")
     parser.add_argument("--weights", type=str, default="yolov8m.pt", help="YOLO model path")
     parser.add_argument("--output", type=str, default="hasil_cyberpunk_trail.mp4", help="output video path")
-    parser.add_argument("--tracker", type=str, default="bytetrack.yaml", help="tracker config (e.g., bytetrack.yaml or botsort.yaml)")
+    parser.add_argument("--tracker", type=str, default="bytetrack.yaml", help="tracker config (e.g., bytetrack.yaml atau botsort.yaml)")
     parser.add_argument("--imgsz", type=int, default=960, help="inference image size")
     parser.add_argument("--conf", type=float, default=0.25, help="confidence threshold")
-    parser.add_argument("--device", type=str, default="cuda" if TORCH_GPU else "cpu", help="compute device")
+    parser.add_argument("--device", type=str, default="cuda" if torch_gpu else "cpu", help="compute device")
     parser.add_argument("--half", action="store_true", help="use FP16 for faster inference on GPU")
     args = parser.parse_args()
 
@@ -166,7 +183,7 @@ def main():
 
     model = YOLO(args.weights)
     model.to(args.device)
-    if args.half and TORCH_GPU:
+    if args.half and torch_gpu:
         model.model.half()
     class_list = model.names
 
@@ -279,7 +296,7 @@ def main():
         if time.time() - last_console_refresh > refresh_interval:
             os.system('cls' if os.name == 'nt' else 'clear')
             show_ascii_header()
-            print_env_info()
+            print_env_info(torch_gpu, gpu_name)
             print('\033[92m' + '[COUNTING] ' + datetime.now().strftime("%H:%M:%S") + '\033[0m')
             total_count = sum(class_counts.values())
             for class_name, count in class_counts.items():
