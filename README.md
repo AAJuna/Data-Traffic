@@ -11,6 +11,8 @@
 - 📈 Real-time and batch processing support
 - 📁 Export results to CSV for further analysis
 - 🎥 Supports various video input formats (MP4, AVI, etc.)
+- ⚙️ Command-line options for choosing model weights, tracker, and image size
+- ⚡ Optional FP16 inference for faster GPU performance
 
 ---
 
@@ -21,6 +23,7 @@
 - Ultralytics YOLOv8 (or YOLOv5)
 - DeepSORT (for tracking)
 - Pandas
+- Optional trackers: ByteTrack, BoT-SORT, or others via `--tracker`
 
 ---
 
@@ -49,10 +52,32 @@
 3. **Run the main script:**
 
     ```
-    python vehicle_counter.py --input videos/your_video.mp4
+    python hitung.py --video your_video.mp4 --weights yolov8m.pt
     ```
 
 4. **Check output** in the `output/` directory.
+
+### 🔧 CLI Options
+
+`hitung.py` now supports several flags to tune accuracy and speed:
+
+| Option | Description |
+| ------ | ----------- |
+| `--weights` | Path to YOLO model (e.g., `yolov8x.pt` for higher accuracy) |
+| `--tracker` | Tracking config such as `bytetrack.yaml` or `botsort.yaml` |
+| `--imgsz` | Inference size, larger values (e.g., 1280) improve accuracy |
+| `--conf` | Confidence threshold |
+| `--device` | Select `cpu`, `cuda`, or specific GPU id |
+| `--half` | Use FP16 for faster inference on supported GPUs |
+
+---
+
+## 🚀 Improving Accuracy & Speed
+
+- **Use newer models**: try `yolov8x.pt`, `RT-DETR`, or `YOLO-NAS` for higher accuracy.
+- **Hardware acceleration**: export models to ONNX/TensorRT or run with NVIDIA DeepStream for real-time throughput.
+- **Advanced trackers**: experiment with `botsort.yaml` or `ocsort.yaml` for better ID management.
+- **Parallel processing**: leverage multi-threaded video reading or GPU batch inference when analyzing multiple streams.
 
 ---
 
@@ -75,5 +100,5 @@ Feel free to use, modify, and contribute.
 
 ## 🙌 Contributions
 
-Pull requests, feature suggestions, and issue reports are welcome.  
+Pull requests, feature suggestions, and issue reports are welcome.
 Let’s build smarter traffic systems together 🚗📈

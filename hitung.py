@@ -5,6 +5,7 @@ import getpass
 import platform
 from datetime import datetime
 import socket
+import argparse
 
 def show_ascii_header():
     header = r"""
@@ -64,6 +65,7 @@ def play_loading_animation(duration=3.5):
 
 try:
     import torch
+    torch.backends.cudnn.benchmark = True
     TORCH_GPU = torch.cuda.is_available()
     GPU_NAME = torch.cuda.get_device_name(0) if TORCH_GPU else "N/A"
 except Exception:
@@ -100,6 +102,17 @@ show_ascii_header()
 play_loading_animation()
 print_env_info()
 time.sleep(1)
+
+parser = argparse.ArgumentParser(description="Vehicle counting with YOLOv8 tracking")
+parser.add_argument("--video", type=str, default="Sampel-Jateng.mp4", help="path to input video")
+parser.add_argument("--weights", type=str, default="yolov8m.pt", help="YOLO model path")
+parser.add_argument("--output", type=str, default="hasil_cyberpunk_trail.mp4", help="output video path")
+parser.add_argument("--tracker", type=str, default="bytetrack.yaml", help="tracker config (e.g., bytetrack.yaml or botsort.yaml)")
+parser.add_argument("--imgsz", type=int, default=960, help="inference image size")
+parser.add_argument("--conf", type=float, default=0.25, help="confidence threshold")
+parser.add_argument("--device", type=str, default="cuda" if TORCH_GPU else "cpu", help="compute device")
+parser.add_argument("--half", action="store_true", help="use FP16 for faster inference on GPU")
+args = parser.parse_args()
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 import warnings
@@ -142,15 +155,19 @@ def cyberpunk_text(img, text, org, color, scale=0.7, thickness=2):
 MAX_TRAIL_LENGTH = 40
 trails = defaultdict(lambda: deque(maxlen=MAX_TRAIL_LENGTH))
 
-model = YOLO('yolov8m.pt')
+model = YOLO(args.weights)
+model.to(args.device)
+if args.half and TORCH_GPU:
+    model.model.half()
 class_list = model.names
 
-cap = cv2.VideoCapture('Sampel-Jateng.mp4')
+cap = cv2.VideoCapture(args.video)
+cap.set(cv2.CAP_PROP_BUFFERSIZE, 2)
 frame_width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
 frame_height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-fps = int(cap.get(cv2.CAP_PROP_FPS))
+fps = int(cap.get(cv2.CAP_PROP_FPS)) or 30
 
-output_path = 'hasil_cyberpunk_trail.mp4'
+output_path = args.output
 fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 out = cv2.VideoWriter(output_path, fourcc, fps, (frame_width, frame_height))
 
@@ -180,9 +197,10 @@ while cap.isOpened():
     results = model.track(
         frame,
         persist=True,
+        tracker=args.tracker,
         classes=allowed_classes,
-        imgsz=960,
-        conf=0.25,
+        imgsz=args.imgsz,
+        conf=args.conf,
         verbose=False
     )
 
