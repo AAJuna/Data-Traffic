@@ -104,8 +104,8 @@ print_env_info()
 time.sleep(1)
 
 parser = argparse.ArgumentParser(description="Vehicle counting with YOLOv8 tracking")
-parser.add_argument("--video", type=str, default="Sampel-Jateng.mp4", help="path to input video")
-parser.add_argument("--weights", type=str, default="yolov8m.pt", help="YOLO model path")
+parser.add_argument("--video", type=str, default="Video.mp4", help="path to input video")
+parser.add_argument("--weights", type=str, default="yolov8n.pt", help="YOLO model path")
 parser.add_argument("--output", type=str, default="hasil_cyberpunk_trail.mp4", help="output video path")
 parser.add_argument("--tracker", type=str, default="bytetrack.yaml", help="tracker config (e.g., bytetrack.yaml or botsort.yaml)")
 parser.add_argument("--imgsz", type=int, default=960, help="inference image size")
@@ -113,6 +113,13 @@ parser.add_argument("--conf", type=float, default=0.25, help="confidence thresho
 parser.add_argument("--device", type=str, default="cuda" if TORCH_GPU else "cpu", help="compute device")
 parser.add_argument("--half", action="store_true", help="use FP16 for faster inference on GPU")
 args = parser.parse_args()
+
+if not os.path.exists(args.video):
+    print(f"[ERROR] Video file not found: {args.video}")
+    sys.exit(1)
+if not os.path.exists(args.weights):
+    print(f"[ERROR] Weights file not found: {args.weights}")
+    sys.exit(1)
 
 os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
 import warnings
