@@ -6,6 +6,7 @@ import platform
 from datetime import datetime
 import socket
 import argparse
+import json
 
 def show_ascii_header():
     header = r"""
@@ -193,6 +194,7 @@ allowed_classes = [1, 2, 3, 5, 7]  # bicycle, car, motorcycle, bus, truck
 
 last_console_refresh = time.time()
 refresh_interval = 0.5  # detik, refresh console setiap 0.5 detik
+log_data = []
 
 while cap.isOpened():
     ret, frame = cap.read()
@@ -287,6 +289,12 @@ while cap.isOpened():
             print(f"  {class_name:<10}: {count:>5}")
         print(f"  {'TOTAL':<10}: {total_count:>5}")
         print('\033[95m' + '-'*32 + '\033[0m')
+        log_entry = {
+            "timestamp": datetime.now().isoformat(),
+            "counts": dict(class_counts),
+            "total": total_count
+        }
+        log_data.append(log_entry)
         last_console_refresh = time.time()
 
     glow_blur = cv2.GaussianBlur(glow_layer, (0, 0), sigmaX=12, sigmaY=12)
@@ -302,4 +310,7 @@ while cap.isOpened():
 cap.release()
 out.release()
 cv2.destroyAllWindows()
+with open('traffic_data.json', 'w') as f:
+    json.dump(log_data, f, indent=2)
 print(f"Processed video saved as {output_path}")
+print("Traffic data log saved to traffic_data.json")
