@@ -1,40 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <title>Traffic Data Dashboard</title>
-    <link rel="stylesheet" href="style.css">
-</head>
-<body>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
     <h1>Traffic Data Dashboard</h1>
+    <input type="file" id="fileInput" accept="application/json" />
+    <p id="status"></p>
     <table id="data-table">
-        <thead></thead>
-        <tbody></tbody>
+      <thead></thead>
+      <tbody></tbody>
     </table>
     <script>
+      const statusEl = document.getElementById('status');
+
+      function populateTable(data) {
+        const thead = document.querySelector('#data-table thead');
+        const tbody = document.querySelector('#data-table tbody');
+        thead.innerHTML = '';
+        tbody.innerHTML = '';
+        if (!Array.isArray(data) || data.length === 0) {
+          thead.innerHTML = '<tr><th>No data available</th></tr>';
+          return;
+        }
+        const headers = Object.keys(data[0].counts);
+        let headerRow = '<tr><th>Timestamp</th>';
+        headers.forEach((h) => (headerRow += `<th>${h}</th>`));
+        headerRow += '<th>Total</th></tr>';
+        thead.innerHTML = headerRow;
+        data.forEach((row) => {
+          let tr = `<tr><td>${row.timestamp}</td>`;
+          headers.forEach((h) => {
+            tr += `<td>${row.counts[h] || 0}</td>`;
+          });
+          tr += `<td>${row.total}</td></tr>`;
+          tbody.innerHTML += tr;
+        });
+      }
+
+      function loadDefault() {
         fetch('traffic_data.json')
-            .then(response => response.json())
-            .then(data => {
-                const thead = document.querySelector('#data-table thead');
-                const tbody = document.querySelector('#data-table tbody');
-                if (data.length === 0) {
-                    thead.innerHTML = '<tr><th>No data available</th></tr>';
-                    return;
-                }
-                const headers = Object.keys(data[0].counts);
-                let headerRow = '<tr><th>Timestamp</th>';
-                headers.forEach(h => headerRow += `<th>${h}</th>`);
-                headerRow += '<th>Total</th></tr>';
-                thead.innerHTML = headerRow;
-                data.forEach(row => {
-                    let tr = `<tr><td>${row.timestamp}</td>`;
-                    headers.forEach(h => {
-                        tr += `<td>${row.counts[h] || 0}</td>`;
-                    });
-                    tr += `<td>${row.total}</td></tr>`;
-                    tbody.innerHTML += tr;
-                });
-            });
+          .then((response) => response.json())
+          .then(populateTable)
+          .catch(() => {
+            statusEl.textContent = 'Tidak bisa memuat traffic_data.json. Silakan pilih file manual di atas.';
+          });
+      }
+
+      document.getElementById('fileInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          try {
+            const json = JSON.parse(ev.target.result);
+            populateTable(json);
+            statusEl.textContent = '';
+          } catch (err) {
+            statusEl.textContent = 'File JSON tidak valid.';
+          }
+        };
+        reader.readAsText(file);
+      });
+
+      loadDefault();
     </script>
-</body>
+  </body>
 </html>

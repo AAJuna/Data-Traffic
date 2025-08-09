@@ -9,6 +9,16 @@ h1 {
   color: #333;
 }
 
+#fileInput {
+  display: block;
+  margin: 10px auto;
+}
+
+#status {
+  text-align: center;
+  color: #c00;
+}
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -16,14 +26,15 @@ table {
   background-color: #fff;
 }
 
-th, td {
+th,
+td {
   border: 1px solid #ddd;
   padding: 8px;
   text-align: center;
 }
 
 th {
-  background-color: #4CAF50;
+  background-color: #4caf50;
   color: white;
 }
 
